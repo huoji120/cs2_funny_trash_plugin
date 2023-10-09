@@ -1,0 +1,1 @@
+# cs2_funny_trash_plugin
