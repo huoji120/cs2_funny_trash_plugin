@@ -2,13 +2,16 @@ require("function")
 PLAYER_NUMBERS = 0
 PLAYER_RESPAWN_TABLES = {}
 IS_START_GAME = true
+local g_hostname_var = nil
+local g_hostport_var = nil
 function OnPlayerConnect(Player, playerSlot, playerName, xuid, SteamId, IpAddress, isBot)
     if isBot == true then
         return
     end
-    luaApi_SentToAllPlayerChat("玩家 \7[".. playerName .."]\1 加入了服务器", CHAT_TYPE_TALK)
+    luaApi_SentToAllPlayerChat("玩家 \7[" .. playerName .. "]\1 加入了服务器", CHAT_TYPE_TALK)
     PLAYER_NUMBERS = PLAYER_NUMBERS + 1
 end
+
 function OnPlayerDisconnect(Player, playerSlot, playerName, xuid, SteamId, IpAddress, isBot)
     if isBot == true then
         return
@@ -22,6 +25,7 @@ function OnPlayerDisconnect(Player, playerSlot, playerName, xuid, SteamId, IpAdd
         PLAYER_RESPAWN_TABLES[Player] = nil
     end
 end
+
 function OnPlayerDeath(victim, killer, isHeadShot)
     if victim == killer then
         return
@@ -42,6 +46,7 @@ function OnPlayerDeath(victim, killer, isHeadShot)
         luaApi_MakePlayerCurrentWeaponDrop(killer)
     end
 end
+
 function OnPlayerChat(Player, ChatType, text)
     local lowerString = text:lower()
     local firstChar = lowerString:sub(1, 1)
@@ -63,8 +68,20 @@ function OnPlayerChat(Player, ChatType, text)
         end
     end
 
+    if lowerString == ".http" then
+        luaApi_HttpAsyncGet("http://key08.com/", "", 30, "test Metadata")
+        return true
+    elseif lowerString == ".convar" then
+        local hostname = luaApi_GetConVarString(g_hostname_var)
+        print("hostname: " .. hostname)
+        local hostport = luaApi_GetConVarInt(g_hostport_var)
+        print("hostport: " .. tostring(hostport))
+        return true
+    end
+
     return false
 end
+
 HITGROUP_HEAD = 1
 function OnPlayerHurt(userid, attacker, health, armor, weapon, dmg_health, dmg_armor, hitgroup)
     if attacker == userid then
@@ -76,10 +93,12 @@ function OnPlayerHurt(userid, attacker, health, armor, weapon, dmg_health, dmg_a
         end
     end
 end
+
 function Timer_Ad(paramsTable)
     luaApi_SentToAllPlayerChat("欢迎来到 \7[垃圾佬]\1 服务器,这边禁止打架",
         CHAT_TYPE_TALK)
 end
+
 function Timer_RespawnPlayer(paramsTable)
     local player = paramsTable.needRespawnPlayerIndex
     if luaApi_CheckPlayerIsInServer(player) == false then
@@ -87,6 +106,7 @@ function Timer_RespawnPlayer(paramsTable)
     end
     luaApi_RespawnPlayerInDeathMatch(player)
 end
+
 function Timer_CheckPlayerWeapon(paramsTable)
     if GAME_MODE == 2 then
         local allPlayerIndexTable = luaApi_GetAllPlayerIndex()
@@ -110,6 +130,7 @@ function Timer_CheckPlayerWeapon(paramsTable)
         end
     end
 end
+
 function Timer_OnPlayerSpawn(paramsTable)
     local playerIndex = paramsTable._playerIndex
     if GAME_MODE == 11 then
@@ -149,35 +170,36 @@ function Timer_OnPlayerSpawn(paramsTable)
     end
     local hubtype = CHAT_TYPE_CENTER
     if GAME_MODE == 0 then
-        SendMessageToAll(playerIndex,"当前buff: 没有buff", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: 没有buff", hubtype)
     elseif GAME_MODE == 1 then
-        SendMessageToAll(playerIndex,"当前buff: \7所有人都一滴血,死了马上复活(1秒)\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7所有人都一滴血,死了马上复活(1秒)\1", hubtype)
     elseif GAME_MODE == 2 then
-        SendMessageToAll(playerIndex,"当前buff: \7全员手雷而且没有武器\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7全员手雷而且没有武器\1", hubtype)
     elseif GAME_MODE == 3 then
-        SendMessageToAll(playerIndex,"当前buff: \7只能用AWP和刀\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7只能用AWP和刀\1", hubtype)
     elseif GAME_MODE == 4 then
         SendMessageToAll(playerIndex, "当前buff: \7打人丢枪\1", hubtype)
         luaApi_ChangePlayeriAccount(playerIndex, 16000)
     elseif GAME_MODE == 5 then
-        SendMessageToAll(playerIndex,"当前buff: \7全员燃烧瓶没有武器\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7全员燃烧瓶没有武器\1", hubtype)
     elseif GAME_MODE == 6 then
-        SendMessageToAll(playerIndex,"当前buff: \7全员只能使用连狙\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7全员只能使用连狙\1", hubtype)
     elseif GAME_MODE == 7 then
-        SendMessageToAll(playerIndex,"当前buff: \7随机重力\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7随机重力\1", hubtype)
     elseif GAME_MODE == 8 then
-        SendMessageToAll(playerIndex,"当前buff: \7每人三次复活机会(1秒)\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7每人三次复活机会(1秒)\1", hubtype)
     elseif GAME_MODE == 9 then
-        SendMessageToAll(playerIndex,"当前buff: \7死了马上复活(1秒)\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7死了马上复活(1秒)\1", hubtype)
     elseif GAME_MODE == 10 then
-        SendMessageToAll(playerIndex,"当前buff: \7所有人200血\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7所有人200血\1", hubtype)
     elseif GAME_MODE == 11 then
-        SendMessageToAll(playerIndex,"当前buff: \7只能打头\1", hubtype)
+        SendMessageToAll(playerIndex, "当前buff: \7只能打头\1", hubtype)
     end
 end
+
 function OnPlayerSpawn(playerIndex)
     --这个位置玩家没有完全重生...
-        if IS_START_GAME == false then
+    if IS_START_GAME == false then
         return
     end
     local parmas = {
@@ -185,6 +207,7 @@ function OnPlayerSpawn(playerIndex)
     }
     luaApi_CreateTimer(0.1, false, false, parmas, Timer_OnPlayerSpawn)
 end
+
 function OnRoundStart(timelimit)
     if IS_START_GAME == false then
         return
@@ -199,6 +222,7 @@ function OnRoundStart(timelimit)
         luaApi_RunServerCommand(stringCommand)
     end
 end
+
 function OnRoundEnd(winnerTeam, intReason, strMessage)
     print("Round End")
     if IS_START_GAME == false then
@@ -214,6 +238,16 @@ function OnRoundEnd(winnerTeam, intReason, strMessage)
         luaApi_RunServerCommand("sv_gravity 800")
     end
 end
+
+function OnHttpRequest(url, metadata, respon, statucode)
+    print("OnHttpRequest")
+    print("url is " .. tostring(url))
+    print("metadata is " .. tostring(metadata))
+    print("respon is " .. tostring(respon))
+    print("statucode is " .. tostring(statucode))
+    return true
+end
+
 function Main()
     ListenToGameEvent("player_connect", OnPlayerConnect)
     ListenToGameEvent("player_disconnect", OnPlayerDisconnect)
@@ -223,6 +257,10 @@ function Main()
     ListenToGameEvent("player_chat", OnPlayerChat)
     ListenToGameEvent("player_hurt", OnPlayerHurt)
     ListenToGameEvent("player_death", OnPlayerDeath)
+    ListenToGameEvent("http_request", OnHttpRequest)
+
+    g_hostname_var = luaApi_GetConVarObject("hostname")
+    g_hostport_var = luaApi_GetConVarObject("hostport")
 
     luaApi_CreateTimer(30.0, true, true, {}, Timer_Ad)
     luaApi_RunServerCommand("mp_warmuptime 60")
